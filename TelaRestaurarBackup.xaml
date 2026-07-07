@@ -1,0 +1,57 @@
+﻿<UserControl x:Class="MemoriasAtelie.TelaRestaurarBackup"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="700"
+             HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+
+    <Border Background="#FFF9FB" Padding="25">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Border Grid.Row="0" Background="White" CornerRadius="12" Padding="15" Margin="0,0,0,20">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
+                </Border.Effect>
+                <TextBlock Text="Central de Restauração de Backups" FontSize="20" FontWeight="Bold" Foreground="#2F4F4F" HorizontalAlignment="Center"/>
+            </Border>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="220"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Background="White" CornerRadius="12" Padding="15" BorderBrush="#FAF5E9" BorderThickness="1" Margin="0,0,15,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="Selecione um ponto de restauração anterior:" FontSize="13" Foreground="#666666" Margin="0,0,0,10"/>
+
+                        <Border Background="#FFFBF9" BorderBrush="#EFEAE0" BorderThickness="1" CornerRadius="8" Padding="5" Grid.Row="1">
+                            <ListBox x:Name="ListBackupsDisponiveis" Background="Transparent" BorderThickness="0" FontSize="14" Foreground="#4A4A4A"/>
+                        </Border>
+                    </Grid>
+                </Border>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Top">
+                    <Border Background="#FFFBF6" CornerRadius="12" Padding="15" BorderBrush="#EFEAE0" BorderThickness="1" Margin="0,0,0,15">
+                        <TextBlock Text="⚠️ ATENÇÃO: Ao restaurar um backup, os dados atuais inseridos após a data escolhida serão substituídos pelos dados contidos no arquivo selecionado." 
+                                   TextWrapping="Wrap" FontSize="11" Foreground="#B22222" LineHeight="1.4" FontWeight="SemiBold"/>
+                    </Border>
+
+                    <Button Content="🔄 Atualizar Lista" Height="35" Background="#2196F3" Foreground="White" FontWeight="Bold" Margin="0,0,0,10" Cursor="Hand" Click="BtnAtualizar_Click"/>
+                    <Button Content="💾 Restaurar Selecionado" Height="40" Background="#B76E79" Foreground="White" FontWeight="Bold" Cursor="Hand" Click="BtnRestaurar_Click"/>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>
