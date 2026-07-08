@@ -1,0 +1,166 @@
+﻿<UserControl x:Class="MemoriasAtelie.TelaGestaoFinanceira"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="650" d:DesignWidth="850">
+
+    <Grid Background="#F5F6FA" Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" Background="White" CornerRadius="10" Padding="15" Margin="0,0,0,15">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" FontSize="18" Foreground="#FF4081" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="Filtros de Pesquisa" FontSize="16" FontWeight="Bold" Foreground="#333333" VerticalAlignment="Center" Margin="0,0,20,0"/>
+
+                    <TextBlock Text="Mês:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#666666"/>
+                    <ComboBox x:Name="CboMes" Width="120" Height="30" Margin="0,0,15,0" SelectionChanged="Filtro_Changed"/>
+
+                    <TextBlock Text="Ano:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#666666"/>
+                    <ComboBox x:Name="CboAno" Width="80" Height="30" Margin="0,0,15,0" SelectionChanged="Filtro_Changed"/>
+
+                    <TextBlock Text="Situação Pgto:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#666666"/>
+                    <ComboBox x:Name="CboSituacaoPgto" Width="120" Height="30" SelectionChanged="Filtro_Changed">
+                        <ComboBoxItem Content="Todos" IsSelected="True"/>
+                        <ComboBoxItem Content="Pago"/>
+                        <ComboBoxItem Content="Parcial"/>
+                        <ComboBoxItem Content="Não Pago"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Margin="28,0,10,0">
+                        <TextBlock Text="Cliente:" VerticalAlignment="Center" Width="50" Foreground="#666666"/>
+                        <ComboBox x:Name="CboBuscarCliente" Width="150" Height="28"
+                                    DisplayMemberPath="Nome" SelectedValuePath="Nome"
+                                    SelectionChanged="Filtro_Changed"/>
+
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0">
+                        <TextBlock Text="Produto:" VerticalAlignment="Center" Width="55" Foreground="#666666"/>
+                        <ComboBox x:Name="CboBuscarProduto" Width="150" Height="28"
+                                    DisplayMemberPath="Nome" SelectedValuePath="Nome"
+                                    SelectionChanged="Filtro_Changed"/>
+
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="White" CornerRadius="10" Padding="15" Margin="0,0,5,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Total Faturado" FontSize="12" Foreground="#888888" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtTotalFaturado" Text="R$ 0,00" FontSize="18" FontWeight="Bold" Foreground="#4A90E2" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Background="White" CornerRadius="10" Padding="15" Margin="5,0,5,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Total Recebido" FontSize="12" Foreground="#888888" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtTotalRecebido" Text="R$ 0,00" FontSize="18" FontWeight="Bold" Foreground="#2ECC71" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Background="White" CornerRadius="10" Padding="15" Margin="5,0,5,0" BorderBrush="#E0E0E0" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="A Receber" FontSize="12" Foreground="#888888" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtTotalAReceber" Text="R$ 0,00" FontSize="18" FontWeight="Bold" Foreground="#F39C12" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="3" Background="White" CornerRadius="10" Padding="15" Margin="5,0,0,0" BorderBrush="#FFD2D2" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Entregue Não Pago ⚠️" FontSize="12" Foreground="#C0392B" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="TxtTotalAlerta" Text="R$ 0,00" FontSize="18" FontWeight="Bold" Foreground="#E74C3C" Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border Grid.Row="2" Background="White" CornerRadius="10" Padding="10">
+
+            <DataGrid x:Name="DgFinanceiro" AutoGenerateColumns="False" IsReadOnly="False" 
+          GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#F0F0F0" 
+          Background="White" BorderThickness="0" RowHeight="38"
+          
+          VirtualizingStackPanel.IsVirtualizing="True"
+          VirtualizingStackPanel.VirtualizationMode="Recycling"
+          ScrollViewer.IsDeferredScrollingEnabled="True"
+          EnableRowVirtualization="True">
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Data" Binding="{Binding DataFormatada, Mode=OneTime}" IsReadOnly="True" Width="90"/>
+                    <DataGridTextColumn Header="Cliente" Binding="{Binding NomeCliente, Mode=OneTime}" IsReadOnly="True" Width="*"/>
+                    <DataGridTextColumn Header="Produto" Binding="{Binding Produto, Mode=OneTime}" IsReadOnly="True" Width="*"/>
+                    <DataGridTextColumn Header="Valor Total" Binding="{Binding ValorTotalFormatado, Mode=OneTime}" IsReadOnly="True" Width="95"/>
+
+                    <DataGridTemplateColumn Header="Status Produção" Width="125">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <ComboBox SelectedValue="{Binding Status, Mode=TwoWay, UpdateSourceTrigger=Explicit}" 
+                              SelectedValuePath="Content" Height="28" VerticalAlignment="Center"
+                              SelectionChanged="CboStatusProducaoGrid_SelectionChanged">
+                                    <ComboBoxItem Content="Pendente"/>
+                                    <ComboBoxItem Content="Em Produção"/>
+                                    <ComboBoxItem Content="Concluído"/>
+                                    <ComboBoxItem Content="Entregue"/>
+                                </ComboBox>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTemplateColumn Header="Valor Pago (R$)" Width="105">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding ValorPagoInput, Mode=TwoWay, UpdateSourceTrigger=Explicit}" 
+                             Height="28" VerticalContentAlignment="Center" Padding="5,0,0,0"
+                             LostFocus="TxtValorPagoGrid_LostFocus"/>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+
+                    <DataGridTextColumn Header="Situação" Binding="{Binding SituacaoFinanceira, Mode=OneWay}" IsReadOnly="True" Width="100">
+                        <DataGridTextColumn.ElementStyle>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Style.Triggers>
+                                    <Trigger Property="Text" Value="Pago">
+                                        <Setter Property="Foreground" Value="#2ECC71"/>
+                                    </Trigger>
+                                    <Trigger Property="Text" Value="Parcial">
+                                        <Setter Property="Foreground" Value="#F39C12"/>
+                                    </Trigger>
+                                    <Trigger Property="Text" Value="Não Pago">
+                                        <Setter Property="Foreground" Value="#E74C3C"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </DataGridTextColumn.ElementStyle>
+                    </DataGridTextColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+
+        </Border>
+    </Grid>
+</UserControl>
