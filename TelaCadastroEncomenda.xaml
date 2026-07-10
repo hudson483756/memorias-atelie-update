@@ -29,7 +29,25 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" PanningMode="Both">
                 <StackPanel>
                     <TextBlock Text="Cliente:" Margin="0,0,0,5" Foreground="#666666" FontWeight="SemiBold"/>
-                    <ComboBox x:Name="CboClientes" Height="35" Margin="0,0,0,15" IsEditable="True" SelectionChanged="CboClientes_SelectionChanged"/>
+                    <Grid Margin="0,0,0,15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <ComboBox x:Name="CboClientes" Grid.Column="0" Height="35" IsEditable="True" SelectionChanged="CboClientes_SelectionChanged"/>
+                        <Button Grid.Column="1" Content="+" Width="35" Height="35" Margin="5,0,0,0" FontWeight="Bold" FontSize="16" Foreground="White" Background="#FF4081" Cursor="Hand" Click="BtnAdicionarClienteRapido_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Style.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="5"/>
+                                        </Style>
+                                    </Style.Resources>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
 
                     <TextBlock Text="WhatsApp do Cliente:" Margin="0,0,0,5" Foreground="#666666" FontWeight="SemiBold"/>
                     <TextBox x:Name="TxtClienteWhatsapp" Height="35" Margin="0,0,0,15" VerticalContentAlignment="Center" Padding="5,0,0,0"/>

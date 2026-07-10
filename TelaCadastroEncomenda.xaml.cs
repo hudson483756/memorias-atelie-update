@@ -160,6 +160,65 @@ namespace MemoriasAtelie
             }
         }
 
+        private void BtnAdicionarClienteRapido_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // 1. Instancia a tela de cadastro de cliente que você já possui no projeto
+                // Nota: Se a sua tela for uma Window, use: var telaCliente = new JanelaCadastroCliente();
+                // Se ela for um UserControl, nós a envelopamos em uma Window abaixo:
+                var telaClienteControl = new TelaCadastroCliente();
+
+                var janelaPopup = new Window
+                {
+                    Title = "Cadastrar Novo Cliente",
+                    Content = telaClienteControl,
+                    Width = 500,          // Ajuste a largura conforme o tamanho da sua tela
+                    Height = 600,         // Ajuste a altura conforme o tamanho da sua tela
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = Window.GetWindow(this), // Faz a janela abrir centralizada por cima da atual
+                    ResizeMode = ResizeMode.NoResize
+                };
+
+                // 2. Abre a tela e pausa a execução até que o usuário termine e feche ela
+                janelaPopup.ShowDialog();
+
+                // 3. Após fechar a janela, precisamos descobrir qual foi o ÚLTIMO cliente cadastrado no banco
+                using (var conexao = new SqliteConnection(stringConexao))
+                {
+                    conexao.Open();
+                    // Busca o cliente com o maior ID (o mais recente)
+                    string queryUltimoCliente = "SELECT Nome, Whatsapp, Medidas FROM Clientes ORDER BY Id DESC LIMIT 1;";
+
+                    using (var cmd = new SqliteCommand(queryUltimoCliente, conexao))
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string nomeRecente = reader["Nome"].ToString();
+                            string whatsappRecente = reader["Whatsapp"] != DBNull.Value ? reader["Whatsapp"].ToString() : "";
+                            string medidasRecente = reader["Medidas"] != DBNull.Value ? reader["Medidas"].ToString() : "";
+
+                            // 4. Recarrega a listagem de clientes da tela de encomendas para incluir o novo
+                            CarregarClientes();
+
+                            // 5. Seleciona automaticamente o cliente recém-cadastrado no ComboBox
+                            CboClientes.Text = nomeRecente;
+
+                            // 6. Preenche os campos de exibição rápida na tela de encomendas
+                            TxtClienteWhatsapp.Text = whatsappRecente;
+                            TxtClienteMedidas.Text = medidasRecente;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Erro ao abrir tela de cadastro de cliente: " + ex.Message, "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
         private void CboClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (!manipuladorAtivo) return;
