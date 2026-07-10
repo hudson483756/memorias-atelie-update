@@ -11,7 +11,9 @@ namespace MemoriasAtelie
 {
     public partial class TelaCadastroEncomenda : UserControl
     {
-        private readonly string stringConexao = "Data Source=memorias.db";
+        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
+        private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
+
         private List<string> caminhosFotosAnexadas = new List<string>();
         private LinhaConsultaModel encomendaEdicao = null;
         private bool estaEditando = false;

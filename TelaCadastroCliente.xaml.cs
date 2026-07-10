@@ -9,7 +9,8 @@ namespace MemoriasAtelie
     public partial class TelaCadastroCliente : UserControl
     {
         private bool _isUpdating = false;
-        private string stringConexao = "Data Source=memorias.db";
+        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
+        private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
 
         public TelaCadastroCliente()
         {

@@ -23,7 +23,8 @@ namespace MemoriasAtelie
         private int mesFocado;
         private int anoFocado;
         private string nomeMesFocado;
-        private string stringConexao = "Data Source=memorias.db";
+        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
+        private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
 
         public TelaDetalhesDia(int dia, int mes, int ano, string nomeMes)
         {

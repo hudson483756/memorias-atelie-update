@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using Microsoft.Data.Sqlite;
 
@@ -6,7 +7,43 @@ namespace MemoriasAtelie
 {
     public static class GerenciadorBanco
     {
-        private static string stringConexao = "Data Source=memorias.db";
+        private static string stringConexao;
+
+        // Construtor estático: Executa automaticamente assim que a aplicação inicia
+        static GerenciadorBanco()
+        {
+            try
+            {
+                // Obtém dinamicamente a pasta Documentos do usuário atual (ex: C:\Users\Nome\Documents)
+                string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+
+                // Monta o caminho completo estável: Documentos\MemoriasAtelie\BancoDados
+                string pastaBanco = Path.Combine(pastaDocumentos, "MemoriasAtelie", "BancoDados");
+                string caminhoCompletoBanco = Path.Combine(pastaBanco, "memorias.db");
+
+                // Cria os diretórios no computador do cliente se eles não existirem
+                if (!Directory.Exists(pastaBanco))
+                {
+                    Directory.CreateDirectory(pastaBanco);
+                }
+
+                stringConexao = $"Data Source={caminhoCompletoBanco}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Erro ao configurar o diretório do banco de dados: {ex.Message}\nO sistema usará um banco temporário local na pasta do programa.",
+                                "Aviso de Diretório", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                // Fallback de segurança caso a pasta de Documentos esteja inacessível
+                stringConexao = "Data Source=memorias.db";
+            }
+        }
+
+        // Método público para que todas as outras telas (como a CadastroEncomenda) consumam a mesma conexão
+        public static string ObterStringConexao()
+        {
+            return stringConexao;
+        }
 
         public static void InicializarEstruturaPadrao()
         {
@@ -61,7 +98,7 @@ namespace MemoriasAtelie
                 }
 
                 InicializarEstruturaPadrao();
-                MessageBox.Show("✨ Banco de dados limpo e reestruturado com sucesso!\nO sistema está pronto para uso em produção.",
+                MessageBox.Show("✨ Banco de dados limpo e reestruturado com sucesso na pasta Documentos!\nO sistema está pronto para uso em produção.",
                                 "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -118,7 +155,7 @@ namespace MemoriasAtelie
                     using (var cmd = new SqliteCommand(insertEncomendas, conexao)) cmd.ExecuteNonQuery();
                 }
 
-                MessageBox.Show("🎮 Banco de testes gerado com sucesso!\nDados fictícios foram carregados para testes de filtros e relatórios.",
+                MessageBox.Show("🎮 Banco de testes gerado com sucesso nos Documentos!\nDados fictícios foram carregados para testes de filtros e relatórios.",
                                 "Ambiente de Teste", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)

@@ -9,7 +9,8 @@ namespace MemoriasAtelie
 {
     public partial class TelaConsultaEncomendas : UserControl
     {
-        private string stringConexao = "Data Source=memorias.db";
+        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
+        private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
 
         public TelaConsultaEncomendas()
         {

@@ -18,7 +18,8 @@ namespace MemoriasAtelie
     public partial class TelaAgendaAnual : UserControl
     {
         private int anoAtualFoco = DateTime.Now.Year;
-        private string stringConexao = "Data Source=memorias.db";
+        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
+        private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
 
         public TelaAgendaAnual()
         {

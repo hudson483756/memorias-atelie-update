@@ -15,7 +15,8 @@ namespace MemoriasAtelie
         private int anoFocado;
         private string nomeMesFocado;
         private string origem; // Guarda se veio da "Agenda" ou da "Consulta"
-        private string stringConexao = "Data Source=memorias.db";
+        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
+        private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
 
         // Novo construtor aceitando a string de origem
         public TelaVisualizarEncomenda(int id, int dia, int mes, int ano, string nomeMes, string telaOrigem)
