@@ -87,6 +87,7 @@
                         <ComboBoxItem Content="Em Produção"/>
                         <ComboBoxItem Content="Concluído"/>
                         <ComboBoxItem Content="Entregue"/>
+                        <ComboBoxItem Content="Cancelado"/>
                     </ComboBox>
 
                     <TextBlock Text="Data da Encomenda:" Margin="0,0,0,5" Foreground="#666666" FontWeight="SemiBold"/>

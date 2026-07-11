@@ -73,6 +73,7 @@
                                 <ComboBoxItem Content="Em Produção"/>
                                 <ComboBoxItem Content="Concluído"/>
                                 <ComboBoxItem Content="Entregue"/>
+                                <ComboBoxItem Content="Cancelado"/>
                             </ComboBox>
                         </StackPanel>
                     </Grid>
