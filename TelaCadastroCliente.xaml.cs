@@ -9,7 +9,6 @@ namespace MemoriasAtelie
     public partial class TelaCadastroCliente : UserControl
     {
         private bool _isUpdating = false;
-        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
         private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
 
         public TelaCadastroCliente()
@@ -34,13 +33,20 @@ namespace MemoriasAtelie
                 using (var conexao = new SqliteConnection(stringConexao))
                 {
                     conexao.Open();
-                    string comandoInserir = "INSERT INTO Clientes (Nome, Whatsapp, Medidas) VALUES (@Nome, @Whatsapp, @Medidas);";
+                    // ALTERADO: Incluído as novas colunas no INSERT
+                    string comandoInserir = @"INSERT INTO Clientes (Nome, Whatsapp, Medidas, UltimaAtualizacao, DispositivoOrigem) 
+                                             VALUES (@Nome, @Whatsapp, @Medidas, @UltimaAtualizacao, @DispositivoOrigem);";
 
                     using (var comando = new SqliteCommand(comandoInserir, conexao))
                     {
                         comando.Parameters.AddWithValue("@Nome", nome);
                         comando.Parameters.AddWithValue("@Whatsapp", telefone);
                         comando.Parameters.AddWithValue("@Medidas", medidas);
+
+                        // ALTERADO: Novos parâmetros adicionados
+                        comando.Parameters.AddWithValue("@UltimaAtualizacao", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                        comando.Parameters.AddWithValue("@DispositivoOrigem", "Windows");
+
                         comando.ExecuteNonQuery();
                     }
                 }

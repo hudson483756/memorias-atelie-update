@@ -9,9 +9,17 @@ using Microsoft.Win32;
 
 namespace MemoriasAtelie
 {
+    // CLASSE AUXILIAR (No nível do namespace para que TODAS as telas, como a de Consulta, possam acessá-la)
+    public class ClienteItem
+    {
+        public int Id { get; set; }
+        public string Nome { get; set; }
+        public string Whatsapp { get; set; }
+        public string Medidas { get; set; }
+    }
+
     public partial class TelaCadastroEncomenda : UserControl
     {
-        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
         private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
 
         private List<string> caminhosFotosAnexadas = new List<string>();
@@ -144,10 +152,13 @@ namespace MemoriasAtelie
                         }
                     }
 
-                    string queryInsert = "INSERT INTO Produtos (Nome) VALUES (@Nome);";
+                    string queryInsert = @"INSERT INTO Produtos (Nome, UltimaAtualizacao, DispositivoOrigem) 
+                                           VALUES (@Nome, @UltimaAtualizacao, @DispositivoOrigem);";
                     using (var cmdInsert = new SqliteCommand(queryInsert, conexao))
                     {
                         cmdInsert.Parameters.AddWithValue("@Nome", novoProduto);
+                        cmdInsert.Parameters.AddWithValue("@UltimaAtualizacao", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                        cmdInsert.Parameters.AddWithValue("@DispositivoOrigem", "Windows");
                         cmdInsert.ExecuteNonQuery();
                     }
                 }
@@ -166,30 +177,24 @@ namespace MemoriasAtelie
         {
             try
             {
-                // 1. Instancia a tela de cadastro de cliente que você já possui no projeto
-                // Nota: Se a sua tela for uma Window, use: var telaCliente = new JanelaCadastroCliente();
-                // Se ela for um UserControl, nós a envelopamos em uma Window abaixo:
                 var telaClienteControl = new TelaCadastroCliente();
 
                 var janelaPopup = new Window
                 {
                     Title = "Cadastrar Novo Cliente",
                     Content = telaClienteControl,
-                    Width = 500,          // Ajuste a largura conforme o tamanho da sua tela
-                    Height = 600,         // Ajuste a altura conforme o tamanho da sua tela
+                    Width = 500,
+                    Height = 600,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Owner = Window.GetWindow(this), // Faz a janela abrir centralizada por cima da atual
+                    Owner = Window.GetWindow(this),
                     ResizeMode = ResizeMode.NoResize
                 };
 
-                // 2. Abre a tela e pausa a execução até que o usuário termine e feche ela
                 janelaPopup.ShowDialog();
 
-                // 3. Após fechar a janela, precisamos descobrir qual foi o ÚLTIMO cliente cadastrado no banco
                 using (var conexao = new SqliteConnection(stringConexao))
                 {
                     conexao.Open();
-                    // Busca o cliente com o maior ID (o mais recente)
                     string queryUltimoCliente = "SELECT Nome, Whatsapp, Medidas FROM Clientes ORDER BY Id DESC LIMIT 1;";
 
                     using (var cmd = new SqliteCommand(queryUltimoCliente, conexao))
@@ -201,13 +206,10 @@ namespace MemoriasAtelie
                             string whatsappRecente = reader["Whatsapp"] != DBNull.Value ? reader["Whatsapp"].ToString() : "";
                             string medidasRecente = reader["Medidas"] != DBNull.Value ? reader["Medidas"].ToString() : "";
 
-                            // 4. Recarrega a listagem de clientes da tela de encomendas para incluir o novo
                             CarregarClientes();
 
-                            // 5. Seleciona automaticamente o cliente recém-cadastrado no ComboBox
                             CboClientes.Text = nomeRecente;
 
-                            // 6. Preenche os campos de exibição rápida na tela de encomendas
                             TxtClienteWhatsapp.Text = whatsappRecente;
                             TxtClienteMedidas.Text = medidasRecente;
                         }
@@ -219,7 +221,6 @@ namespace MemoriasAtelie
                 MessageBox.Show("Erro ao abrir tela de cadastro de cliente: " + ex.Message, "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
 
         private void CboClientes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
@@ -300,13 +301,14 @@ namespace MemoriasAtelie
                     {
                         query = @"UPDATE Encomendas 
                                   SET ClienteId = @ClienteId, Produto = @Produto, Descricao = @Descricao, 
-                                      FotosCaminhos = @FotosCaminhos, Valor = @Valor, Status = @Status, Data = @Data 
+                                      FotosCaminhos = @FotosCaminhos, Valor = @Valor, Status = @Status, Data = @Data,
+                                      UltimaAtualizacao = @UltimaAtualizacao, DispositivoOrigem = @DispositivoOrigem
                                   WHERE Id = @Id;";
                     }
                     else
                     {
-                        query = @"INSERT INTO Encomendas (ClienteId, Produto, Descricao, FotosCaminhos, Valor, Status, Data) 
-                                  VALUES (@ClienteId, @Produto, @Descricao, @FotosCaminhos, @Valor, @Status, @Data);";
+                        query = @"INSERT INTO Encomendas (ClienteId, Produto, Descricao, FotosCaminhos, Valor, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
+                                  VALUES (@ClienteId, @Produto, @Descricao, @FotosCaminhos, @Valor, @Status, @Data, @UltimaAtualizacao, @DispositivoOrigem);";
                     }
 
                     using (var cmd = new SqliteCommand(query, conexao))
@@ -319,6 +321,9 @@ namespace MemoriasAtelie
                         cmd.Parameters.AddWithValue("@Status", status);
                         cmd.Parameters.AddWithValue("@Data", data);
 
+                        cmd.Parameters.AddWithValue("@UltimaAtualizacao", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                        cmd.Parameters.AddWithValue("@DispositivoOrigem", "Windows");
+
                         if (estaEditando)
                         {
                             cmd.Parameters.AddWithValue("@Id", encomendaEdicao.Id);
@@ -328,7 +333,7 @@ namespace MemoriasAtelie
                     }
                 }
 
-                MessageBox.Show(estaEditando ? "Encomenda updated com sucesso!" : "Encomenda salva com sucesso!", "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show(estaEditando ? "Encomenda atualizada com sucesso!" : "Encomenda salva com sucesso!", "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
                 LimparCampos();
 
                 var mainWindow = Window.GetWindow(this);
@@ -384,7 +389,6 @@ namespace MemoriasAtelie
                 }
             }
 
-            // CORREÇÃO CS1061: Mudamos de .Data para .DataFormatada para bater com a sua classe LinhaConsultaModel
             if (DateTime.TryParse(encomendaEdicao.DataFormatada, out DateTime dataEnc))
             {
                 DpData.SelectedDate = dataEnc;
@@ -434,13 +438,5 @@ namespace MemoriasAtelie
         }
 
         private void TxtValor_TextChanged(object sender, TextChangedEventArgs e) { }
-    }
-
-    public class ClienteItem
-    {
-        public int Id { get; set; }
-        public string Nome { get; set; }
-        public string Whatsapp { get; set; }
-        public string Medidas { get; set; }
     }
 }
