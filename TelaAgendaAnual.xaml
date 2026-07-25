@@ -72,23 +72,29 @@
                                     <Border.Effect>
                                         <DropShadowEffect BlurRadius="4" ShadowDepth="2" Opacity="0.1" Color="Black"/>
                                     </Border.Effect>
-                                    <Grid Height="220">
+
+                                    <!-- Altura total do Card aumentada para 260px -->
+                                    <Grid Height="260">
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="140"/>
+                                            <RowDefinition Height="180"/>
                                             <RowDefinition Height="*"/>
                                         </Grid.RowDefinitions>
 
-                                        <!-- Imagem da Encomenda (Visibilidade dinâmica corrigida) -->
-                                        <Grid Grid.Row="0" Background="#F0F0F0">
-                                            <Image Source="{Binding CaminhoImagemCompleto}" Stretch="UniformToFill" Visibility="{Binding VisibilidadeImagem}"/>
+                                        <!-- Imagem da Encomenda com Stretch="Uniform" para caber a foto inteira sem cortes -->
+                                        <Grid Grid.Row="0" Background="#F8F8F8">
+                                            <Image Source="{Binding CaminhoImagemCompleto}" 
+                                                   Stretch="Uniform" 
+                                                   HorizontalAlignment="Center" 
+                                                   VerticalAlignment="Center" 
+                                                   Visibility="{Binding VisibilidadeImagem}"/>
                                             <TextBlock Text="🎁" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding VisibilidadePlaceholder}"/>
                                         </Grid>
 
                                         <!-- Detalhes do Card -->
-                                        <StackPanel Grid.Row="1" Margin="8" VerticalAlignment="Center">
+                                        <StackPanel Grid.Row="1" Margin="10,6" VerticalAlignment="Center">
                                             <TextBlock Text="{Binding Produto}" FontWeight="Bold" FontSize="14" Foreground="#2F4F4F" TextTrimming="CharacterEllipsis"/>
                                             <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                                <TextBlock Text="👤 " FontSize="10" Foreground="Gray"/>
+                                                <TextBlock Text="👤 " FontSize="11" Foreground="Gray"/>
                                                 <TextBlock Text="{Binding NomeCliente}" FontSize="12" Foreground="#333333" TextTrimming="CharacterEllipsis"/>
                                             </StackPanel>
                                         </StackPanel>
