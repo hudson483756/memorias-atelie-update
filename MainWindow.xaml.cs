@@ -60,7 +60,7 @@ namespace MemoriasAtelie
                 if (!Directory.Exists(pastaFotos)) Directory.CreateDirectory(pastaFotos);
                 if (!Directory.Exists(pastaBackups)) Directory.CreateDirectory(pastaBackups);
 
-                string caminhoBancoOriginal = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memorias.db");
+                string caminhoBancoOriginal = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memoriasWindows.db");
 
                 if (System.IO.File.Exists(caminhoBancoOriginal))
                 {
@@ -109,7 +109,7 @@ namespace MemoriasAtelie
                 string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 string pastaBackups = System.IO.Path.Combine(pastaDocumentos, "MemoriasAtelie", "Backups");
 
-                string caminhoBancoOriginal = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memorias.db");
+                string caminhoBancoOriginal = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memoriasWindows.db");
 
                 if (System.IO.File.Exists(caminhoBancoOriginal))
                 {

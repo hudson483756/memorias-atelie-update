@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Microsoft.Data.Sqlite;
+using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
-using Microsoft.Data.Sqlite;
-using Microsoft.Win32;
 
 namespace MemoriasAtelie
 {
@@ -238,6 +239,7 @@ namespace MemoriasAtelie
             }
         }
 
+
         private void BtnAnexarFotos_Click(object sender, RoutedEventArgs e)
         {
             var openFileDialog = new OpenFileDialog
@@ -248,16 +250,55 @@ namespace MemoriasAtelie
 
             if (openFileDialog.ShowDialog() == true)
             {
-                foreach (string arquivo in openFileDialog.FileNames)
+                // Pasta que sincroniza com o Drive/Android
+                string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string pastaFotosAtelie = Path.Combine(pastaDocumentos, "MemoriasAtelie", "Fotos", "Memorias");
+
+                if (!Directory.Exists(pastaFotosAtelie))
                 {
-                    if (!caminhosFotosAnexadas.Contains(arquivo))
+                    Directory.CreateDirectory(pastaFotosAtelie);
+                }
+
+                // Sanitiza o nome do cliente removendo caracteres especiais e espaços
+                string nomeClienteSanitizado = string.IsNullOrWhiteSpace(CboClientes.Text)
+                    ? "Cliente"
+                    : Regex.Replace(CboClientes.Text.Trim(), @"[^\w]", "");
+
+                // Gera timestamp único no formato AAAAMMDD_HHMMSS
+                string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+                int contador = 1;
+
+                foreach (string arquivoOriginal in openFileDialog.FileNames)
+                {
+                    try
                     {
-                        caminhosFotosAnexadas.Add(arquivo);
+                        string extensao = Path.GetExtension(arquivoOriginal);
+                        // Nome do arquivo: nomeclientedatahoraesegundo (ex: Maria_20260724_125630_01.jpg)
+                        string novoNomeFoto = $"{nomeClienteSanitizado}_{timestamp}_{contador:D2}{extensao}";
+                        string caminhoDestino = Path.Combine(pastaFotosAtelie, novoNomeFoto);
+
+                        // Copia o arquivo para a pasta sincronizada do Drive
+                        File.Copy(arquivoOriginal, caminhoDestino, overwrite: true);
+
+                        // Grava APENAS o NOME DO ARQUIVO na lista (que irá para a coluna FotosCaminhos no banco)
+                        if (!caminhosFotosAnexadas.Contains(novoNomeFoto))
+                        {
+                            caminhosFotosAnexadas.Add(novoNomeFoto);
+                        }
+
+                        contador++;
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Erro ao processar imagem: {ex.Message}", "Erro de Arquivo", MessageBoxButton.OK, MessageBoxImage.Error);
                     }
                 }
+
                 AtualizarGaleriaFotos();
             }
         }
+
+
 
         private void AtualizarGaleriaFotos()
         {
@@ -307,8 +348,8 @@ namespace MemoriasAtelie
                     }
                     else
                     {
-                        query = @"INSERT INTO Encomendas (ClienteId, Produto, Descricao, FotosCaminhos, Valor, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
-                                  VALUES (@ClienteId, @Produto, @Descricao, @FotosCaminhos, @Valor, @Status, @Data, @UltimaAtualizacao, @DispositivoOrigem);";
+                        query = @"INSERT INTO Encomendas (ClienteId, Produto, Descricao, FotosCaminhos, Valor, ValorPago, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
+                 VALUES (@ClienteId, @Produto, @Descricao, @FotosCaminhos, @Valor, @ValorPago, @Status, @Data, @UltimaAtualizacao, @DispositivoOrigem);";
                     }
 
                     using (var cmd = new SqliteCommand(query, conexao))

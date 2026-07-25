@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -15,10 +17,11 @@ namespace MemoriasAtelie
         private int anoFocado;
         private string nomeMesFocado;
         private string origem; // Guarda se veio da "Agenda" ou da "Consulta"
-        // ALTERADO: Agora puxa o caminho correto e dinâmico diretamente do GerenciadorBanco
+
+        // Puxa a string de conexão dinâmica do banco
         private readonly string stringConexao = GerenciadorBanco.ObterStringConexao();
 
-        // Novo construtor aceitando a string de origem
+        // Construtor
         public TelaVisualizarEncomenda(int id, int dia, int mes, int ano, string nomeMes, string telaOrigem)
         {
             InitializeComponent();
@@ -27,7 +30,7 @@ namespace MemoriasAtelie
             this.mesFocado = mes;
             this.anoFocado = ano;
             this.nomeMesFocado = nomeMes;
-            this.origem = telaOrigem; // Armazena a origem
+            this.origem = telaOrigem;
 
             CarregarDadosCompletos();
         }
@@ -75,14 +78,33 @@ namespace MemoriasAtelie
                                 TxtStatus.Text = "Pendente";
                                 BorderStatus.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF9800"));
 
+                                // RESOLUÇÃO DOS CAMINHOS DAS FOTOS
                                 if (!string.IsNullOrWhiteSpace(fotosBanco))
                                 {
+                                    // Diretorio padrão onde o sistema guarda as imagens no computador
+                                    string pastaFotosSistema = Path.Combine(
+                                        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                                        "MemoriasAtelie", "Fotos", "Memorias"
+                                    );
+
                                     string[] caminhos = fotosBanco.Split(';');
-                                    foreach (var caminho in caminhos)
+                                    foreach (var item in caminhos)
                                     {
-                                        if (!string.IsNullOrWhiteSpace(caminho))
+                                        if (string.IsNullOrWhiteSpace(item)) continue;
+
+                                        string nomeOuCaminho = item.Trim();
+                                        string caminhoFinal = nomeOuCaminho;
+
+                                        // Se não for um caminho absoluto válido, monta a rota completa no disco
+                                        if (!File.Exists(nomeOuCaminho))
                                         {
-                                            fotos.Add(caminho.Trim());
+                                            caminhoFinal = Path.Combine(pastaFotosSistema, Path.GetFileName(nomeOuCaminho));
+                                        }
+
+                                        // Adiciona à lista de exibição se o arquivo de foto for encontrado
+                                        if (File.Exists(caminhoFinal))
+                                        {
+                                            fotos.Add(caminhoFinal);
                                         }
                                     }
                                 }
@@ -92,7 +114,7 @@ namespace MemoriasAtelie
 
                     if (fotos.Count > 0)
                     {
-                        ListaFotosGerais.ItemsSource = fotos.ToList();
+                        ListaFotosGerais.ItemsSource = fotos;
                         ListaFotosGerais.Visibility = Visibility.Visible;
                         TxtAvisoSemFoto.Visibility = Visibility.Collapsed;
                     }
@@ -134,15 +156,16 @@ namespace MemoriasAtelie
 
                 try
                 {
-                    // 1. Obter a lista atual que está associada ao ItemsControl
+                    // 1. Obter a lista atual associada ao ItemsControl
                     var fotosAtuais = ListaFotosGerais.ItemsSource as List<string>;
                     if (fotosAtuais != null)
                     {
-                        // Remover o caminho da lista local
+                        // Remover a foto selecionada
                         fotosAtuais.Remove(caminhoFoto);
 
-                        // 2. Montar a nova string separada por ';' para atualizar o banco
-                        string novaFotosCadeia = string.Join(";", fotosAtuais);
+                        // 2. Extrai apenas os nomes dos arquivos para salvar de forma relativa no SQLite
+                        var apenasNomes = fotosAtuais.Select(f => Path.GetFileName(f)).ToList();
+                        string novaFotosCadeia = string.Join(";", apenasNomes);
 
                         // 3. Atualizar no Banco de Dados
                         using (var conexao = new SqliteConnection(stringConexao))
@@ -152,7 +175,6 @@ namespace MemoriasAtelie
 
                             using (var cmd = new SqliteCommand(queryUpdate, conexao))
                             {
-                                // Se a string ficou vazia, passamos DBNull ou string vazia
                                 cmd.Parameters.AddWithValue("@Fotos", string.IsNullOrWhiteSpace(novaFotosCadeia) ? (object)DBNull.Value : novaFotosCadeia);
                                 cmd.Parameters.AddWithValue("@Id", idEncomenda);
                                 cmd.ExecuteNonQuery();
@@ -160,7 +182,7 @@ namespace MemoriasAtelie
                         }
 
                         // 4. Atualizar a interface gráfica
-                        ListaFotosGerais.ItemsSource = null; // Reseta o binding anterior
+                        ListaFotosGerais.ItemsSource = null;
 
                         if (fotosAtuais.Count > 0)
                         {
@@ -188,14 +210,16 @@ namespace MemoriasAtelie
         {
             if (Window.GetWindow(this) is MainWindow mainWindow)
             {
-                // VERIFICAÇÃO DE ORIGEM PARA DECIDIR A TELA DE RETORNO
                 if (origem == "Consulta")
                 {
                     mainWindow.AreaConteudo.Content = new TelaConsultaEncomendas();
                 }
+                else if (origem == "Agenda")
+                {
+                    mainWindow.AreaConteudo.Content = new TelaAgendaAnual();
+                }
                 else
                 {
-                    // Se não for Consulta, volta para o comportamento padrão da Agenda
                     mainWindow.AreaConteudo.Content = new TelaDetalhesDia(diaFocado, mesFocado, anoFocado, nomeMesFocado);
                 }
             }

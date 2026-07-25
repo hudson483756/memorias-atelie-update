@@ -74,7 +74,7 @@ namespace MemoriasAtelie
                     // Fecha conexões ativas do SQLite para liberar o arquivo para substituição
                     SqliteConnection.ClearAllPools();
 
-                    string caminhoBancoAtual = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memorias.db");
+                    string caminhoBancoAtual = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "memoriasWindows.db");
 
                     // 1. Cria um mini backup temporário de segurança do banco que ia ser destruído
                     if (File.Exists(caminhoBancoAtual))

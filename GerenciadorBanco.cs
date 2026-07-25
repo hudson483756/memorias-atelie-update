@@ -17,11 +17,11 @@ namespace MemoriasAtelie
                 // Obtém dinamicamente a pasta Documentos do usuário atual (ex: C:\Users\Nome\Documents)
                 string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
-                // Monta o caminho completo estável: Documentos\MemoriasAtelie\BancoDados
+                // Monta o caminho completo estável com o NOVO NOME do banco Windows
                 string pastaBanco = Path.Combine(pastaDocumentos, "MemoriasAtelie", "BancoDados");
-                string caminhoCompletoBanco = Path.Combine(pastaBanco, "memorias.db");
+                string caminhoCompletoBanco = Path.Combine(pastaBanco, "memoriasWindows.db");
 
-                // Cria os diretórios no computador do cliente se eles não existirem
+                // Cria os diretórios no computador se eles não existirem
                 if (!Directory.Exists(pastaBanco))
                 {
                     Directory.CreateDirectory(pastaBanco);
@@ -35,11 +35,10 @@ namespace MemoriasAtelie
                                 "Aviso de Diretório", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                 // Fallback de segurança caso a pasta de Documentos esteja inacessível
-                stringConexao = "Data Source=memorias.db";
+                stringConexao = "Data Source=memorias_win.db";
             }
         }
 
-        // Método público para que todas as outras telas (como a CadastroEncomenda) consumam a mesma conexão
         public static string ObterStringConexao()
         {
             return stringConexao;
@@ -53,21 +52,21 @@ namespace MemoriasAtelie
                 {
                     conexao.Open();
 
-                    // 1. Cria a estrutura base das tabelas se ainda não existirem
+                    // 1. Cria a estrutura base das tabelas com a nova coluna ValorPago
                     string criarClientes = @"CREATE TABLE IF NOT EXISTS Clientes (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT, 
                             Nome TEXT NOT NULL, 
                             Whatsapp TEXT, 
                             Medidas TEXT,
                             UltimaAtualizacao TEXT DEFAULT CURRENT_TIMESTAMP,
-                            DispositivoOrigem TEXT DEFAULT 'Desconhecido'
+                            DispositivoOrigem TEXT DEFAULT 'Windows'
                         );";
 
                     string criarProdutos = @"CREATE TABLE IF NOT EXISTS Produtos (
                             Id INTEGER PRIMARY KEY AUTOINCREMENT, 
                             Nome TEXT NOT NULL,
                             UltimaAtualizacao TEXT DEFAULT CURRENT_TIMESTAMP,
-                            DispositivoOrigem TEXT DEFAULT 'Desconhecido'
+                            DispositivoOrigem TEXT DEFAULT 'Windows'
                         );";
 
                     string criarEncomendas = @"CREATE TABLE IF NOT EXISTS Encomendas (
@@ -77,10 +76,11 @@ namespace MemoriasAtelie
                             Descricao TEXT,
                             FotosCaminhos TEXT, 
                             Valor REAL DEFAULT 0.0,
+                            ValorPago REAL DEFAULT 0.0,
                             Status TEXT DEFAULT 'Pendente',
                             Data TEXT, 
                             UltimaAtualizacao TEXT DEFAULT CURRENT_TIMESTAMP,
-                            DispositivoOrigem TEXT DEFAULT 'Desconhecido',
+                            DispositivoOrigem TEXT DEFAULT 'Windows',
                             FOREIGN KEY(ClienteId) REFERENCES Clientes(Id)
                           );";
 
@@ -88,7 +88,7 @@ namespace MemoriasAtelie
                     using (var cmd = new SqliteCommand(criarProdutos, conexao)) cmd.ExecuteNonQuery();
                     using (var cmd = new SqliteCommand(criarEncomendas, conexao)) cmd.ExecuteNonQuery();
 
-                    // 2. Roda a atualização para garantir que bancos de dados antigos que já existem recebam as novas colunas
+                    // 2. Garante que bancos/estruturas já existentes recebam as novas colunas
                     AtualizarEstruturaTabelasExistentes(conexao);
                 }
             }
@@ -98,25 +98,26 @@ namespace MemoriasAtelie
             }
         }
 
-        /// <summary>
-        /// Método de migração segura. Percorre as tabelas existentes e adiciona as novas colunas
-        /// sem corromper ou perder os registros antigos já cadastrados.
-        /// </summary>
         private static void RedirectOuAtualizarTabela(SqliteConnection conexao, string tabela)
         {
-            // Verifica e adiciona a coluna 'UltimaAtualizacao' se ela não existir
+            // Adiciona UltimaAtualizacao se não existir
             if (!ColunaExiste(conexao, tabela, "UltimaAtualizacao"))
             {
-                // CURRENT_TIMESTAMP popula automaticamente com a data/hora UTC atual no SQLite
                 string query = $"ALTER TABLE {tabela} ADD COLUMN UltimaAtualizacao TEXT DEFAULT CURRENT_TIMESTAMP;";
                 using (var cmd = new SqliteCommand(query, conexao)) cmd.ExecuteNonQuery();
             }
 
-            // Verifica e adiciona a coluna 'DispositivoOrigem' se ela não existir
+            // Adiciona DispositivoOrigem se não existir
             if (!ColunaExiste(conexao, tabela, "DispositivoOrigem"))
             {
-                // Atribui 'Desconhecido' para todos os registros antigos existentes
-                string query = $"ALTER TABLE {tabela} ADD COLUMN DispositivoOrigem TEXT DEFAULT 'Desconhecido';";
+                string query = $"ALTER TABLE {tabela} ADD COLUMN DispositivoOrigem TEXT DEFAULT 'Windows';";
+                using (var cmd = new SqliteCommand(query, conexao)) cmd.ExecuteNonQuery();
+            }
+
+            // Adiciona ValorPago especificamente se for a tabela Encomendas
+            if (tabela.Equals("Encomendas", StringComparison.OrdinalIgnoreCase) && !ColunaExiste(conexao, tabela, "ValorPago"))
+            {
+                string query = "ALTER TABLE Encomendas ADD COLUMN ValorPago REAL DEFAULT 0.0;";
                 using (var cmd = new SqliteCommand(query, conexao)) cmd.ExecuteNonQuery();
             }
         }
@@ -128,9 +129,6 @@ namespace MemoriasAtelie
             RedirectOuAtualizarTabela(conexao, "Encomendas");
         }
 
-        /// <summary>
-        /// Consulta os metadados da tabela para saber se a coluna informada já existe.
-        /// </summary>
         private static bool ColunaExiste(SqliteConnection conexao, string tabela, string coluna)
         {
             string query = $"PRAGMA table_info({tabela});";
@@ -140,7 +138,6 @@ namespace MemoriasAtelie
                 {
                     while (reader.Read())
                     {
-                        // A segunda coluna (índice 1) do PRAGMA retorna o nome das colunas da tabela
                         if (reader.GetString(1).Equals(coluna, StringComparison.OrdinalIgnoreCase))
                         {
                             return true;
@@ -153,7 +150,7 @@ namespace MemoriasAtelie
 
         public static void CriarBancoVazio()
         {
-            var resultado = MessageBox.Show("Aviso: Isso apagará permanentemente todos os registros atuais do seu sistema para iniciar do zero.\n\nDeseja continuar?",
+            var resultado = MessageBox.Show("Aviso: Isso apagará permanentemente todos os registros do banco local do Windows para iniciar do zero.\n\nDeseja continuar?",
                                             "Confirmar Reset", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
             if (resultado != MessageBoxResult.Yes) return;
@@ -170,7 +167,7 @@ namespace MemoriasAtelie
                 }
 
                 InicializarEstruturaPadrao();
-                MessageBox.Show("✨ Banco de dados limpo e reestruturado com sucesso na pasta Documentos!\nO sistema está pronto para uso em produção.",
+                MessageBox.Show("✨ Banco Windows ('memoriasWindows.db') limpo e reestruturado com sucesso!",
                                 "Sucesso", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
@@ -198,36 +195,27 @@ namespace MemoriasAtelie
                 {
                     conexao.Open();
 
-                    // MASSA DE TESTES ATUALIZADA COM AS MEDIDAS, DATAS E MARCAÇÃO DE DISPOSITIVOS
                     string insertClientes = @"
-                INSERT INTO Clientes (Id, Nome, Whatsapp, Medidas, UltimaAtualizacao, DispositivoOrigem) VALUES (1, 'Ana Clara', '(61) 99999-9999', 'Busto: 90cm, Cintura: 70cm, Altura: 1.65m', '2026-07-16 10:00:00', 'Windows');
-                INSERT INTO Clientes (Id, Nome, Whatsapp, Medidas, UltimaAtualizacao, DispositivoOrigem) VALUES (2, 'Beatriz Souza', '(61) 88888-8888', 'Circunferência Cabeça: 42cm (Para Gorros)', '2026-07-16 11:30:00', 'Android');
-                INSERT INTO Clientes (Id, Nome, Whatsapp, Medidas, UltimaAtualizacao, DispositivoOrigem) VALUES (3, 'Carlos Eduardo', '(61) 77777-7777', 'Mão: 18cm, Pulso: 16cm', '2026-07-16 12:15:00', 'Windows');";
+                INSERT INTO Clientes (Id, Nome, Whatsapp, Medidas, UltimaAtualizacao, DispositivoOrigem) VALUES (1, 'Ana Clara', '(61) 99999-9999', 'Busto: 90cm, Cintura: 70cm', '2026-07-16 10:00:00', 'Windows');
+                INSERT INTO Clientes (Id, Nome, Whatsapp, Medidas, UltimaAtualizacao, DispositivoOrigem) VALUES (2, 'Beatriz Souza', '(61) 88888-8888', 'Cabeça: 42cm', '2026-07-16 11:30:00', 'Android');";
 
                     string insertProdutos = @"
                 INSERT INTO Produtos (Id, Nome, UltimaAtualizacao, DispositivoOrigem) VALUES (1, 'Amigurumi Leão', '2026-07-16 09:00:00', 'Windows');
-                INSERT INTO Produtos (Id, Nome, UltimaAtualizacao, DispositivoOrigem) VALUES (2, 'Manta de Crochê', '2026-07-16 09:05:00', 'Windows');
-                INSERT INTO Produtos (Id, Nome, UltimaAtualizacao, DispositivoOrigem) VALUES (3, 'Bolsa Fio de Malha', '2026-07-16 09:10:00', 'Android');";
+                INSERT INTO Produtos (Id, Nome, UltimaAtualizacao, DispositivoOrigem) VALUES (2, 'Manta de Crochê', '2026-07-16 09:05:00', 'Windows');";
 
                     string insertEncomendas = @"
-                INSERT INTO Encomendas (ClienteId, Produto, Descricao, Valor, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
-                VALUES (1, 'Amigurumi Leão', 'Tamanho M, cores neutras', 150.00, 'Entregue', '2026-06-10', '2026-07-16 14:00:00', 'Windows');
+                INSERT INTO Encomendas (ClienteId, Produto, Descricao, Valor, ValorPago, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
+                VALUES (1, 'Amigurumi Leão', 'Tamanho M, cores neutras', 150.00, 150.00, 'Entregue', '2026-06-10', '2026-07-16 14:00:00', 'Windows');
 
-                INSERT INTO Encomendas (ClienteId, Produto, Descricao, Valor, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
-                VALUES (2, 'Manta de Crochê', 'Casal, linha de algodão', 450.00, 'Em Produção', '2026-06-22', '2026-07-16 14:05:00', 'Android');
-
-                INSERT INTO Encomendas (ClienteId, Produto, Descricao, Valor, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
-                VALUES (3, 'Bolsa Fio de Malha', 'Cor telha, com alça de couro', 120.00, 'Pendente', '2026-05-15', '2026-07-16 14:10:00', 'Windows');
-
-                INSERT INTO Encomendas (ClienteId, Produto, Descricao, Valor, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
-                VALUES (1, 'Amigurumi Leão', 'Chaveiro de brinde', 45.00, 'Concluído', '2026-04-02', '2026-07-16 14:12:00', 'Android');";
+                INSERT INTO Encomendas (ClienteId, Produto, Descricao, Valor, ValorPago, Status, Data, UltimaAtualizacao, DispositivoOrigem) 
+                VALUES (2, 'Manta de Crochê', 'Casal, linha de algodão', 450.00, 200.00, 'Em Produção', '2026-06-22', '2026-07-16 14:05:00', 'Android');";
 
                     using (var cmd = new SqliteCommand(insertClientes, conexao)) cmd.ExecuteNonQuery();
                     using (var cmd = new SqliteCommand(insertProdutos, conexao)) cmd.ExecuteNonQuery();
                     using (var cmd = new SqliteCommand(insertEncomendas, conexao)) cmd.ExecuteNonQuery();
                 }
 
-                MessageBox.Show("🎮 Banco de testes gerado com sucesso nos Documentos!\nDados fictícios foram carregados para testes de filtros e relatórios.",
+                MessageBox.Show("🎮 Banco de testes gerado com sucesso com o arquivo 'memorias_win.db'!",
                                 "Ambiente de Teste", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)

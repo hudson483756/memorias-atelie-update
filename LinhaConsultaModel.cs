@@ -1,29 +1,40 @@
-﻿public class LinhaConsultaModel
+﻿using System;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+
+namespace MemoriasAtelie
 {
-    public int Id { get; set; }
-    public string DataFormatada { get; set; }
-    public string NomeCliente { get; set; }
-    public string Produto { get; set; }
-    public string Descricao { get; set; }
-    public string FotosCaminhos { get; set; }
-    public double Valor { get; set; }
-    public string Status { get; set; }
-
-    // CORREÇÃO: Propriedade que estava faltando para o binding do Grid de Histórico
-    public string ValorFormatado => Valor.ToString("C2", new System.Globalization.CultureInfo("pt-BR"));
-
-    // MELHORIA: Pega apenas o caminho da primeira imagem cadastrada na cadeia string
-    public string PrimeiraFoto
+    public class LinhaConsultaModel
     {
-        get
+        public int Id { get; set; }
+        public string DataFormatada { get; set; }
+        public string NomeCliente { get; set; }
+        public string Produto { get; set; }
+        public string Descricao { get; set; }
+        public string FotosCaminhos { get; set; } // Armazena apenas os nomes dos arquivos separados por ';'
+        public double Valor { get; set; }
+        public double ValorPago { get; set; }
+        public string Status { get; set; }
+
+        public string ValorFormatado => Valor.ToString("C2", new CultureInfo("pt-BR"));
+        public string ValorPagoFormatado => ValorPago.ToString("C2", new CultureInfo("pt-BR"));
+
+        // Monta e valida o caminho físico na pasta sincronizada com base no nome gravado no banco
+        public string PrimeiraFoto
         {
-            if (string.IsNullOrWhiteSpace(FotosCaminhos)) return null;
+            get
+            {
+                if (string.IsNullOrWhiteSpace(FotosCaminhos)) return null;
 
-            // Retorna o primeiro item antes do primeiro ';'
-            string primeiroCaminho = FotosCaminhos.Split(';').FirstOrDefault();
+                string primeiroNomeArquivo = FotosCaminhos.Split(';').FirstOrDefault();
+                if (string.IsNullOrWhiteSpace(primeiroNomeArquivo)) return null;
 
-            // Verifica se o arquivo físico realmente existe no computador para evitar erros de renderização
-            return System.IO.File.Exists(primeiroCaminho) ? primeiroCaminho : null;
+                string pastaDocumentos = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string caminhoCompleto = Path.Combine(pastaDocumentos, "MemoriasAtelie", "Fotos", "Memorias", primeiroNomeArquivo);
+
+                return File.Exists(caminhoCompleto) ? caminhoCompleto : null;
+            }
         }
     }
 }

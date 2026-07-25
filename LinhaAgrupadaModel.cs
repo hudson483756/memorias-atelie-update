@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace MemoriasAtelie
 {
@@ -8,9 +7,12 @@ namespace MemoriasAtelie
         public string ChaveAgrupamento { get; set; } // Nome do Cliente ou Data
         public List<LinhaConsultaModel> Encomendas { get; set; } = new List<LinhaConsultaModel>();
         public double ValorTotalGrupo { get; set; }
+
+        // Soma dos valores já pagos neste grupo
+        public double ValorPagoTotalGrupo { get; set; }
+
         public int QuantidadeTotal { get; set; }
 
-        // PROPRIEDADES CORRIGIDAS:
         public string Produto { get; set; }
         public double FaturamentoTotal { get; set; }
         public string Status { get; set; }

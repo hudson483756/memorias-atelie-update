@@ -15,6 +15,7 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
+            <!-- Cabeçalho -->
             <Border Grid.Row="0" Background="White" CornerRadius="15" Padding="15" Margin="0,0,0,20">
                 <Border.Effect>
                     <DropShadowEffect BlurRadius="10" ShadowDepth="1" Opacity="0.05"/>
@@ -32,11 +33,14 @@
                 </Grid>
             </Border>
 
+            <!-- Conteúdo Principal -->
             <Grid Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1.1*"/>
                     <ColumnDefinition Width="0.9*"/>
                 </Grid.ColumnDefinitions>
+
+                <!-- Coluna Esquerda: Informações do Cliente e Projeto -->
                 <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,10,0">
                     <StackPanel>
                         <Border Background="White" CornerRadius="12" Padding="20" Margin="0,0,0,15" BorderBrush="#FAF5E9" BorderThickness="1">
@@ -75,6 +79,7 @@
                     </StackPanel>
                 </ScrollViewer>
 
+                <!-- Coluna Direita: Galeria de Imagens -->
                 <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="15" Margin="10,0,0,0" BorderBrush="#FAF5E9" BorderThickness="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                     <Grid>
                         <Grid.RowDefinitions>
@@ -92,26 +97,47 @@
                                     </ItemsPanelTemplate>
                                 </ItemsControl.ItemsPanel>
 
-
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <!-- Um Grid para sobrepor o botão de deletar em cima da foto -->
-                                        <Grid Margin="0,0,12,0" VerticalAlignment="Stretch">
+                                        <!-- Quadrado padronizado de 180x180 px -->
+                                        <Grid Margin="0,0,12,0" Width="180" Height="180">
                                             <!-- Botão da Foto (Clique para Ampliar) -->
-                                            <Button Background="Transparent" BorderThickness="0" Cursor="Hand" Click="FotoGaleria_Click" VerticalAlignment="Stretch">
-                                                <Border Background="#FFFBF6" CornerRadius="8" BorderBrush="#EFEAE0" BorderThickness="1" Width="200" Padding="5" ClipToBounds="True" VerticalAlignment="Stretch">
-                                                    <Image Source="{Binding}" Stretch="Uniform" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            <Button Background="Transparent" 
+                                                    BorderThickness="0" 
+                                                    Cursor="Hand" 
+                                                    Click="FotoGaleria_Click" 
+                                                    HorizontalAlignment="Stretch" 
+                                                    VerticalAlignment="Stretch">
+                                                <Border Background="#FFFBF6" 
+                                                        CornerRadius="8" 
+                                                        BorderBrush="#EFEAE0" 
+                                                        BorderThickness="1" 
+                                                        ClipToBounds="True" 
+                                                        HorizontalAlignment="Stretch" 
+                                                        VerticalAlignment="Stretch">
+                                                    <!-- Stretch="Uniform" para caber a foto inteira sem cortar -->
+                                                    <Image Source="{Binding}" 
+                                                           Stretch="Uniform" 
+                                                           HorizontalAlignment="Center" 
+                                                           VerticalAlignment="Center"/>
                                                 </Border>
                                             </Button>
 
-                                            <!-- Botão Excluir (Fica flutuando no canto superior direito) -->
-                                            <Button Width="28" Height="28" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5"
-                    Background="#FFEAEA" BorderBrush="#FFCCD2" BorderThickness="1" Cursor="Hand"
-                    Click="BtnExcluirFoto_Click" ToolTip="Excluir esta foto da encomenda">
+                                            <!-- Botão Excluir Flutuante -->
+                                            <Button Width="28" 
+                                                    Height="28" 
+                                                    HorizontalAlignment="Right" 
+                                                    VerticalAlignment="Top" 
+                                                    Margin="5"
+                                                    Background="#FFEAEA" 
+                                                    BorderBrush="#FFCCD2" 
+                                                    BorderThickness="1" 
+                                                    Cursor="Hand"
+                                                    Click="BtnExcluirFoto_Click" 
+                                                    ToolTip="Excluir esta foto da encomenda">
                                                 <Button.Resources>
                                                     <Style TargetType="Border">
                                                         <Setter Property="CornerRadius" Value="14"/>
-                                                        <!-- Deixa o botão redondo -->
                                                     </Style>
                                                 </Button.Resources>
                                                 <TextBlock Text="❌" FontSize="11" HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -119,7 +145,6 @@
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
-
 
                             </ItemsControl>
                         </ScrollViewer>
