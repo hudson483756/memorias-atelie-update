@@ -55,7 +55,7 @@
                 </ItemsControl>
             </ScrollViewer>
 
-            <!-- Grid de Encomendas (Visao Mensal) -->
+            <!-- Grid de Encomendas (Visao Mensal - Estilo Galeria Compacta 5 Colunas) -->
             <Grid x:Name="GridMensal" Visibility="Collapsed">
                 <TextBlock x:Name="TxtSemEncomendas" Text="Nenhuma encomenda para este mês." FontSize="16" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
 
@@ -63,39 +63,41 @@
                     <ItemsControl x:Name="ItemsEncomendas">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <UniformGrid Columns="3"/>
+                                <!-- Layout de 5 colunas -->
+                                <UniformGrid Columns="5"/>
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Margin="6" Background="White" CornerRadius="12" Padding="0" Cursor="Hand" ClipToBounds="True" MouseLeftButtonDown="CardEncomenda_Click">
+                                <Border Margin="4" Background="White" CornerRadius="8" Padding="0" Cursor="Hand" ClipToBounds="True" MouseLeftButtonDown="CardEncomenda_Click">
                                     <Border.Effect>
-                                        <DropShadowEffect BlurRadius="4" ShadowDepth="2" Opacity="0.1" Color="Black"/>
+                                        <DropShadowEffect BlurRadius="4" ShadowDepth="1" Opacity="0.08" Color="Black"/>
                                     </Border.Effect>
 
-                                    <!-- Altura total do Card aumentada para 260px -->
-                                    <Grid Height="260">
+                                    <!-- Card compacto com 150px de altura total -->
+                                    <Grid Height="150">
                                         <Grid.RowDefinitions>
-                                            <RowDefinition Height="180"/>
+                                            <!-- Área da Imagem com 100px -->
+                                            <RowDefinition Height="100"/>
                                             <RowDefinition Height="*"/>
                                         </Grid.RowDefinitions>
 
-                                        <!-- Imagem da Encomenda com Stretch="Uniform" para caber a foto inteira sem cortes -->
-                                        <Grid Grid.Row="0" Background="#F8F8F8">
+                                        <!-- Container da foto com fundo Branco (fundido ao card) -->
+                                        <Grid Grid.Row="0" Background="White">
                                             <Image Source="{Binding CaminhoImagemCompleto}" 
                                                    Stretch="Uniform" 
                                                    HorizontalAlignment="Center" 
                                                    VerticalAlignment="Center" 
                                                    Visibility="{Binding VisibilidadeImagem}"/>
-                                            <TextBlock Text="🎁" FontSize="40" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding VisibilidadePlaceholder}"/>
+                                            <TextBlock Text="🎁" FontSize="26" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding VisibilidadePlaceholder}"/>
                                         </Grid>
 
-                                        <!-- Detalhes do Card -->
-                                        <StackPanel Grid.Row="1" Margin="10,6" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Produto}" FontWeight="Bold" FontSize="14" Foreground="#2F4F4F" TextTrimming="CharacterEllipsis"/>
-                                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                                                <TextBlock Text="👤 " FontSize="11" Foreground="Gray"/>
-                                                <TextBlock Text="{Binding NomeCliente}" FontSize="12" Foreground="#333333" TextTrimming="CharacterEllipsis"/>
+                                        <!-- Detalhes compactos do produto e cliente -->
+                                        <StackPanel Grid.Row="1" Margin="6,2" VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding Produto}" FontWeight="Bold" FontSize="11" Foreground="#2F4F4F" TextTrimming="CharacterEllipsis" ToolTip="{Binding Produto}"/>
+                                            <StackPanel Orientation="Horizontal" Margin="0,1,0,0">
+                                                <TextBlock Text="👤 " FontSize="9" Foreground="Gray"/>
+                                                <TextBlock Text="{Binding NomeCliente}" FontSize="10" Foreground="#555555" TextTrimming="CharacterEllipsis"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </Grid>
