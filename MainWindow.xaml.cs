@@ -22,15 +22,15 @@ namespace MemoriasAtelie
         {
             InitializeComponent();
 
-            // CHAMADA ADICIONADA: Configura as pastas e faz o backup inicial ao abrir o programa
+            // Configura as pastas e faz o backup inicial ao abrir o programa
             ConfigurarEstruturaEBackup();
 
             // 1º Garante que o arquivo do banco existe e tem as tabelas necessárias
             MemoriasAtelie.GerenciadorBanco.InicializarEstruturaPadrao();
 
-            
+            // 2º Sincroniza e mescla automaticamente as novidades vindas do banco do Android
+            MemoriasAtelie.SincronizadorLocal.SincronizarComAndroid();
         }
-
 
         // Adicione este método dentro da classe MainWindow em MainWindow.xaml.cs
         private void MenuRelatorioEncomendas_Click(object sender, RoutedEventArgs e)
@@ -41,8 +41,8 @@ namespace MemoriasAtelie
         private void BtnConfigurarBanco_Click(object sender, RoutedEventArgs e)
         {
             // Passa a Window atual como referência para o efeito de sobreposição (Owner)
-            
         }
+
         // =========================================================================
         // MÉTODOS DE SEGURANÇA, PASTAS E BACKUP AUTOMÁTICO
         // =========================================================================
@@ -68,9 +68,6 @@ namespace MemoriasAtelie
                     string caminhoDestinoBackup = System.IO.Path.Combine(pastaBackups, nomeBackup);
 
                     System.IO.File.Copy(caminhoBancoOriginal, caminhoDestinoBackup, true);
-
-                    // OPCIONAL: Se quiser que avise logo na abertura, descomente a linha abaixo:
-                    // MessageBox.Show($"Backup diário de inicialização salvo em:\n{caminhoDestinoBackup}", "Segurança Ativada", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
@@ -88,11 +85,7 @@ namespace MemoriasAtelie
                 switch (janelaBanco.Resultado)
                 {
                     case JanelaGerenciarBanco.OpcaoBanco.Teste:
-                        // AGORA CHAMA A FUNÇÃO QUE ADICIONA OS DADOS FALSOS
                         GerenciadorBanco.CriarBancoTeste();
-
-                        // Dica: Se a TelaConsultaEncomendas estiver aberta atrás, 
-                        // vale a pena recarregar a tela para os dados aparecerem na hora.
                         break;
 
                     case JanelaGerenciarBanco.OpcaoBanco.Vazio:
@@ -118,10 +111,8 @@ namespace MemoriasAtelie
 
                     System.IO.File.Copy(caminhoBancoOriginal, caminhoDestino, true);
 
-                    // ATUALIZAÇÃO IMPORTANTE: Copia automaticamente o caminho completo para a Área de Transferência (Ctrl+V)
                     Clipboard.SetText(caminhoDestino);
 
-                    // Mensagem avisando que a cópia já foi feita
                     MessageBox.Show($"Sessão encerrada com segurança!\n\n" +
                                     $"O backup foi salvo em:\n{caminhoDestino}\n\n" +
                                     $"✨ O caminho foi copiado automaticamente! Basta usar o Ctrl+V no Google Drive para encontrá-lo.",
@@ -140,9 +131,6 @@ namespace MemoriasAtelie
         // MÉTODOS DE ZOOM GLOBAL
         // =========================================================================
 
-        /// <summary>
-        /// Torna o Zoom visível preenchendo 100% da aplicação
-        /// </summary>
         public void AbrirZoom(string caminhoImagem)
         {
             if (!string.IsNullOrWhiteSpace(caminhoImagem))
@@ -159,14 +147,12 @@ namespace MemoriasAtelie
             }
         }
 
-        // Evento que esconde a camada de Zoom e limpa o cache de imagem da tela
         private void FecharZoomGlobal_Click(object sender, MouseButtonEventArgs e)
         {
             GridZoomGlobal.Visibility = Visibility.Collapsed;
             ImgZoomGlobalPreview.Source = null;
         }
 
-        // Sobrecarga para capturar também o clique do botão físico de fechar
         private void FecharZoomGlobal_Click(object sender, RoutedEventArgs e)
         {
             GridZoomGlobal.Visibility = Visibility.Collapsed;
@@ -177,43 +163,36 @@ namespace MemoriasAtelie
         // EVENTOS DE NAVEGAÇÃO INTERNA E MENUS
         // =========================================================================
 
-        // Evento para abrir o menu de hambúrguer ao clicar nele
         private void BotaoMenu_Click(object sender, RoutedEventArgs e)
         {
             MenuSuspenso.IsOpen = true;
         }
 
-        // Evento para carregar a tela de Cadastro de Cliente
         private void MenuCadastroCliente_Click(object sender, RoutedEventArgs e)
         {
             AreaConteudo.Content = new TelaCadastroCliente();
         }
 
-        // Evento para carregar a tela de encomendas
         private void MenuNovaEncomenda_Click(object sender, RoutedEventArgs e)
         {
             AreaConteudo.Content = new TelaCadastroEncomenda();
         }
 
-        // Evento adicionado para carregar a tela de Gestão Financeira
         private void MenuGestaoFinanceira_Click(object sender, RoutedEventArgs e)
         {
             AreaConteudo.Content = new TelaGestaoFinanceira();
         }
 
-        // Evento que abre a tela de meses a partir do menu
         private void MenuAgendaAnual_Click(object sender, RoutedEventArgs e)
         {
             AreaConteudo.Content = new TelaAgendaAnual();
         }
 
-        // Evento para limpar a tela e voltar a ver apenas a logo
         private void MenuInicio_Click(object sender, RoutedEventArgs e)
         {
             AreaConteudo.Content = null;
         }
 
-        // Evento para carregar a tela de restauração de backups
         private void MenuRestaurarBackup_Click(object sender, RoutedEventArgs e)
         {
             AreaConteudo.Content = new TelaRestaurarBackup();
@@ -223,30 +202,28 @@ namespace MemoriasAtelie
         // BOTÕES DE CONTROLE DA JANELA PRINCIPAL
         // =========================================================================
 
-        // Evento para Minimizar a Janela
         private void BtnMinimizar_Click(object sender, RoutedEventArgs e)
         {
             this.WindowState = WindowState.Minimized;
         }
 
-        // Evento para Maximizar ou Restaurar o tamanho da Janela
         private void BtnMaximizar_Click(object sender, RoutedEventArgs e)
         {
             if (this.WindowState == WindowState.Maximized)
             {
                 this.WindowState = WindowState.Normal;
-                TxtIconeMaximizar.Text = "\uE922"; // Ícone de um quadrado (Maximizar)
+                TxtIconeMaximizar.Text = "\uE922";
             }
             else
             {
                 this.WindowState = WindowState.Maximized;
-                TxtIconeMaximizar.Text = "\uE923"; // Ícone de dois quadrados sobrepostos (Restaurar)
+                TxtIconeMaximizar.Text = "\uE923";
             }
         }
 
         private void BotaoSair_Click(object sender, RoutedEventArgs e)
         {
-            this.Close(); // Fecha a aplicação
+            this.Close();
         }
     }
 }
